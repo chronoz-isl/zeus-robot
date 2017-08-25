@@ -1,4 +1,5 @@
 
+
 #include <stdio.h>
 #include <iostream>
 
@@ -24,6 +25,8 @@ int main()
 	CreateData	robotData;
 	RobotConnector	robot;
 	char floor_colors[4] = { 'w', 'w', 'w', 'w' };
+	int direction=0;
+	bool checked=false;
 
 	ofstream	record;
 	record.open("../data/robot.txt");
@@ -70,8 +73,6 @@ int main()
                 ma[i] = (previous[i] + robotData.cliffSignal[i]) >> 1;
             }
 		}
-
-
 		// Process From cliffSignal => floor color
 
 		for (int i = 0; i <= 3; i++) {
@@ -86,6 +87,18 @@ int main()
             }
 		}
 
+        if(!checked){
+            if(floor_colors[1] == 'w' && floor_colors[2]=='b'){
+                direction=0;
+                checked=true;
+            }
+            else if(floor_colors[1] == 'b' && floor_colors[2]=='w'){
+                direction=1;
+                checked=true;
+            } else {
+                continue;
+            }
+        }
 
 		// Condition of turning left/right
         #define MAX_N 100
@@ -94,13 +107,23 @@ int main()
 		int16_t temp_color;
 		if ((temp_color = floor_colors[1]) == floor_colors[2]) {
 			if (temp_color == 'w') {
-				vr = 0.55 - n * 0.001;  // turn right
+                    if(direction==0){
+                        vr = 0.55 - n * 0.001;  // turn right
+                    }
+                    else{
+                        vl = 0.55 - n * 0.001;  // turn left
+                    }
 				if (n < MAX_N){
                     n += 1;
 				}
 			}
 			else if (temp_color == 'b') {
-				vl = 0.55 - n * 0.001;  // turn left
+                if(direction==0){
+                    vl = 0.55 - n * 0.001;  // turn left
+                }
+				else{
+                    vr = 0.55 - n * 0.001;  // turn right
+				}
 				if (n < MAX_N) {
                     n += 1;
 				}
