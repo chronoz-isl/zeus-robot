@@ -36,6 +36,15 @@ int main()
 	robot.DriveDirect(0, 0);
 	cvNamedWindow("Robot");
 
+	int previous0 = 0;
+	int previous1 = 0;
+	int previous2 = 0;
+	int previous3 = 0;
+	int ma0;
+	int ma1;
+	int ma2;
+	int ma3;
+
 	while (true)
 	{
 		//char c = cvWaitKey(30);
@@ -57,18 +66,74 @@ int main()
 		if (!robot.ReadData(robotData))
 			cout << "ReadData Fail" << endl;
 
-		// Process From cliffSignal => floor color
-		for (int i = 0; i <= 3; i++) {
-			if (robotData.cliffSignal[i] < black_thresholds[i]) {
-				floor_colors[i] = 'b';
-			}
-			else if (robotData.cliffSignal[i] > white_thresholds[i]) {
-				floor_colors[i] = 'w';
-			}
-			else {
-				floor_colors[i] = 'g';
-			}
+		//Filter
+		if (previous0 == 0) {
+			ma0 = robotData.cliffSignal[0];
 		}
+		else {
+			ma0 = (previous0 + robotData.cliffSignal[0]) / 2;
+		}
+		if (previous1 == 0) {
+			ma1 = robotData.cliffSignal[1];
+		}
+		else {
+			ma1 = (previous1 + robotData.cliffSignal[1]) / 2;
+		}
+		if (previous2 == 0) {
+			ma2 = robotData.cliffSignal[2];
+		}
+		else {
+			ma2 = (previous2 + robotData.cliffSignal[2]) / 2;
+		}
+		if (previous3 == 0) {
+			ma3 = robotData.cliffSignal[3];
+		}
+		else {
+			ma3 = (previous0 + robotData.cliffSignal[3]) / 2;
+		}
+
+
+
+
+		// Process From cliffSignal => floor color
+	
+		if (ma0 < black_thresholds[0]) {
+			floor_colors[0] = 'b';
+		}
+		else if (ma0 > white_thresholds[0]) {
+			floor_colors[0] = 'w';
+		}
+		else {
+			floor_colors[0] = 'g';
+		}
+		if (ma1 < black_thresholds[1]) {
+			floor_colors[1] = 'b';
+		}
+		else if (ma1 > white_thresholds[1]) {
+			floor_colors[1] = 'w';
+		}
+		else {
+			floor_colors[1] = 'g';
+		}
+		if (ma2 < black_thresholds[2]) {
+			floor_colors[2] = 'b';
+		}
+		else if (ma2 > white_thresholds[2]) {
+			floor_colors[2] = 'w';
+		}
+		else {
+			floor_colors[2] = 'g';
+		}
+		if (ma3 < black_thresholds[3]) {
+			floor_colors[3] = 'b';
+		}
+		else if (ma3 > white_thresholds[3]) {
+			floor_colors[3] = 'w';
+		}
+		else {
+			floor_colors[3] = 'g';
+		}
+		
 
 		// Condition of turning left/right
 
