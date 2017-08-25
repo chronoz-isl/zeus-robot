@@ -73,8 +73,6 @@ int main()
                 ma[i] = (previous[i] + robotData.cliffSignal[i]) >> 1;
             }
 		}
-
-
 		// Process From cliffSignal => floor color
 
 		for (int i = 0; i <= 3; i++) {
@@ -115,7 +113,6 @@ int main()
                     else{
                         vl = 0.55 - n * 0.001;  // turn left
                     }
-
 				if (n < MAX_N){
                     n += 1;
 				}
