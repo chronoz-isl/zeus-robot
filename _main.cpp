@@ -13,15 +13,21 @@ using namespace std;
 
 bool isRecord = false;
 
+/* |-- black --|-- grey --|-- white --| */
+
+const int32_t white_thresholds[4] = { 700, 700, 1050, 1270 };
+const int32_t black_thresholds[4] = { 500, 700, 1050, 1230 };
+
 int main()
 {
 	CreateData	robotData;
 	RobotConnector	robot;
+	char floor_colors[4] = { 'w', 'w', 'w', 'w' };
 
 	ofstream	record;
 	record.open("../data/robot.txt");
 
-	if( !robot.Connect(Create_Comport) )
+	if (!robot.Connect(Create_Comport))
 	{
 		cout << "Error : Can't connect to robot @" << Create_Comport << endl;
 		return -1;
@@ -30,51 +36,74 @@ int main()
 	robot.DriveDirect(0, 0);
 	cvNamedWindow("Robot");
 
-
-	while(true)
+	while (true)
 	{
-		char c = cvWaitKey(30);
-		if( c == 27 ) break;
-	
+		//char c = cvWaitKey(30);
+		//if (c == 27) break;
+
 		double vx, vz;
 		vx = vz = 0.0;
 
-		switch(c)
+		/*switch (c)
 		{
 		case 'w': vx = +1; break;
 		case 's': vx = -1; break;
-		case 'a': vz = +1; break;
-		case 'd': vz = -1; break;
 		case ' ': vx = vz = 0; break;
 		case 'c': robot.Connect(Create_Comport); break;
 		}
+		*/
+		vx = 1;
 
-		double vl = vx - vz;
-		double vr = vx + vz;
+		if (!robot.ReadData(robotData))
+			cout << "ReadData Fail" << endl;
+
+		// Process From cliffSignal => floor color
+		for (int i = 0; i <= 3; i++) {
+			if (robotData.cliffSignal[i] < black_thresholds[i]) {
+				floor_colors[i] = 'b';
+			}
+			else if (robotData.cliffSignal[i] > white_thresholds[i]) {
+				floor_colors[i] = 'w';
+			}
+			else {
+				floor_colors[i] = 'g';
+			}
+		}
+
+		// Condition of turning left/right
+
+		double vl, vr;
+		vl = vr = vx;
+		int16_t temp_color;
+		if ((temp_color = floor_colors[1]) == floor_colors[2]) {
+			if (temp_color == 'w') {
+				vr = 0;  // turn right
+			}
+			else if (temp_color == 'b') {
+				vl = 0;  // turn left
+			}
+		}
 
 		int velL = (int)(vl*Create_MaxVel);
 		int velR = (int)(vr*Create_MaxVel);
 
-		int color = (abs(velL)+abs(velR))/4;
+		int color = (abs(velL) + abs(velR)) / 4;
 		color = (color < 0) ? 0 : (color > 255) ? 255 : color;
 
-		int inten = (robotData.cliffSignal[1] + robotData.cliffSignal[2])/8 - 63;
+		int inten = (robotData.cliffSignal[1] + robotData.cliffSignal[2]) / 8 - 63;
 		inten = (inten < 0) ? 0 : (inten > 255) ? 255 : inten;
 
 		//cout << color << " " << inten << " " << robotData.cliffSignal[1] << " " << robotData.cliffSignal[2] << endl;
 
 		robot.LEDs(velL > 0, velR > 0, color, inten);
-		
-		if( !robot.DriveDirect(velL, velR) )
+
+		if (!robot.DriveDirect(velL, velR))
 			cout << "SetControl Fail" << endl;
 
-		if( !robot.ReadData(robotData) )
-			cout << "ReadData Fail" << endl;
+		//cout << robotData.cliffSignal[0] << "\t" << robotData.cliffSignal[1] << "\t" << robotData.cliffSignal[2] << "\t" << robotData.cliffSignal[3] << endl;
+		cout << floor_colors[0] << "\t" << floor_colors[1] << "\t" << floor_colors[2] << "\t" << floor_colors[3] << endl;
 
-		if( isRecord )
-			record << robotData.cliffSignal[0] << "\t" << robotData.cliffSignal[1] << "\t" << robotData.cliffSignal[2] << "\t" << robotData.cliffSignal[3] << endl;
-		
-		cout << "Robot " << robotData.infrared << endl;
+		//cout << "Robot " << robotData.infrared << endl;
 	}
 
 	robot.Disconnect();
