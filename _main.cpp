@@ -17,6 +17,7 @@ bool isRecord = false;
 
 const int32_t white_thresholds[4] = { 700, 700, 1050, 1270 };
 const int32_t black_thresholds[4] = { 500, 700, 1050, 1230 };
+int n = 0;
 
 int main()
 {
@@ -36,14 +37,8 @@ int main()
 	robot.DriveDirect(0, 0);
 	cvNamedWindow("Robot");
 
-	int previous0 = 0;
-	int previous1 = 0;
-	int previous2 = 0;
-	int previous3 = 0;
-	int ma0;
-	int ma1;
-	int ma2;
-	int ma3;
+	int previous[4] = {0, 0, 0, 0};
+	int ma[4];
 
 	while (true)
 	{
@@ -67,87 +62,53 @@ int main()
 			cout << "ReadData Fail" << endl;
 
 		//Filter
-		if (previous0 == 0) {
-			ma0 = robotData.cliffSignal[0];
+		for (int i = 0; i <= 3; i++) {
+            if (previous[i] == 0) {
+                ma[i] = robotData.cliffSignal[i];
+            }
+            else {
+                ma[i] = (previous[i] + robotData.cliffSignal[i]) >> 1;
+            }
 		}
-		else {
-			ma0 = (previous0 + robotData.cliffSignal[0]) / 2;
-		}
-		if (previous1 == 0) {
-			ma1 = robotData.cliffSignal[1];
-		}
-		else {
-			ma1 = (previous1 + robotData.cliffSignal[1]) / 2;
-		}
-		if (previous2 == 0) {
-			ma2 = robotData.cliffSignal[2];
-		}
-		else {
-			ma2 = (previous2 + robotData.cliffSignal[2]) / 2;
-		}
-		if (previous3 == 0) {
-			ma3 = robotData.cliffSignal[3];
-		}
-		else {
-			ma3 = (previous0 + robotData.cliffSignal[3]) / 2;
-		}
-
-
 
 
 		// Process From cliffSignal => floor color
-	
-		if (ma0 < black_thresholds[0]) {
-			floor_colors[0] = 'b';
+
+		for (int i = 0; i <= 3; i++) {
+            if (ma[i] < black_thresholds[i]) {
+                floor_colors[i] = 'b';
+            }
+            else if (ma[i] > white_thresholds[i]) {
+                floor_colors[i] = 'w';
+            }
+            else {
+                floor_colors[i] = 'g';
+            }
 		}
-		else if (ma0 > white_thresholds[0]) {
-			floor_colors[0] = 'w';
-		}
-		else {
-			floor_colors[0] = 'g';
-		}
-		if (ma1 < black_thresholds[1]) {
-			floor_colors[1] = 'b';
-		}
-		else if (ma1 > white_thresholds[1]) {
-			floor_colors[1] = 'w';
-		}
-		else {
-			floor_colors[1] = 'g';
-		}
-		if (ma2 < black_thresholds[2]) {
-			floor_colors[2] = 'b';
-		}
-		else if (ma2 > white_thresholds[2]) {
-			floor_colors[2] = 'w';
-		}
-		else {
-			floor_colors[2] = 'g';
-		}
-		if (ma3 < black_thresholds[3]) {
-			floor_colors[3] = 'b';
-		}
-		else if (ma3 > white_thresholds[3]) {
-			floor_colors[3] = 'w';
-		}
-		else {
-			floor_colors[3] = 'g';
-		}
-		
+
 
 		// Condition of turning left/right
-
+        #define MAX_N 100
 		double vl, vr;
 		vl = vr = vx;
 		int16_t temp_color;
 		if ((temp_color = floor_colors[1]) == floor_colors[2]) {
 			if (temp_color == 'w') {
-				vr = 0;  // turn right
+				vr = 0.55 - n * 0.001;  // turn right
+				if (n < MAX_N){
+                    n += 1;
+				}
 			}
 			else if (temp_color == 'b') {
-				vl = 0;  // turn left
+				vl = 0.55 - n * 0.001;  // turn left
+				if (n < MAX_N) {
+                    n += 1;
+				}
 			}
+		} else {
+            n = 0;
 		}
+		cout << "N: " << n << " ";
 
 		int velL = (int)(vl*Create_MaxVel);
 		int velR = (int)(vr*Create_MaxVel);
