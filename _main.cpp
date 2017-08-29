@@ -39,7 +39,7 @@ int main() {
 	robot.DriveDirect(0, 0);
 	cvNamedWindow("Robot");
 
-	int clint direction_checkediff_history[4] = { 0, 0, 0, 0 };
+	int cliff_history[4] = { 0, 0, 0, 0 };
 	int direction_checked_counter=0;
 	int ccw_counter=0;
 	int cw_counter=0;
@@ -84,31 +84,30 @@ int main() {
 				floor_colors[i] = 'g';
 			}
 		}
-
+		
+		
+		// Check direction
 		if (!direction_checked) {
-            if(direction_checked_counter < 3){
-
-                if (floor_colors[1] == 'w' && floor_colors[2] == 'b') {
-                    ccw_counter ++;
-
-                } else if (floor_colors[1] == 'b' && floor_colors[2] == 'w') {
-                    cw_counter ++;
-
-                } else {
-		    continue;
-                }
-                direction_checked_counter ++;
-                continue;
-            }
-            else{
-                direction_checked = true;
-            }
-            if( ccw_counter > cw_counter){
-                robot_direction = CCW;
-            }
-            else{
-                robot_direction = CW;
-            }
+            		if(direction_checked_counter < 3){
+                		if (floor_colors[1] == 'w' && floor_colors[2] == 'b') {
+                   			ccw_counter ++;
+          			} else if (floor_colors[1] == 'b' && floor_colors[2] == 'w') {
+                    			cw_counter ++;	
+                		} else {
+		    			continue;
+                		}
+                		direction_checked_counter ++;
+                		continue;
+            		}
+            		else{
+                		direction_checked = true;
+            		}
+            		if( ccw_counter > cw_counter){
+                		robot_direction = CCW;
+            		}
+           		else{
+                		robot_direction = CW;
+            		}
 
 		}
 		
