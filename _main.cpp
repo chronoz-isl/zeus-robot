@@ -95,9 +95,9 @@ int main() {
                     cw_counter ++;
 
                 } else {
-
+		    continue;
                 }
-                n ++;
+                direction_checked_counter ++;
                 continue;
             }
             else{
