@@ -105,20 +105,6 @@ int main() {
 			}
 		}
 
-		if (!direction_checked) {
-			if (floor_colors[1] == 'w' && floor_colors[2] == 'b') {
-				robot_direction = CCW;
-				direction_checked = true;
-			}
-			else if (floor_colors[1] == 'b' && floor_colors[2] == 'w') {
-				robot_direction = CW;
-				direction_checked = true;
-			}
-			else {
-				continue;
-			}
-		}
-
 		int velL, velR;
 		// handle bumping
 
