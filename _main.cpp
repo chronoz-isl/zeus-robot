@@ -23,6 +23,7 @@ const int32_t white_thresholds[4] = { 700, 700, 1050, 1270 };
 const int32_t black_thresholds[4] = { 500, 700, 1050, 1230 };
 int n = 0;
 
+
 long long now_ms() {
 	milliseconds ms = duration_cast< milliseconds >(
 		system_clock::now().time_since_epoch());
@@ -53,9 +54,12 @@ int main() {
 	cvNamedWindow("Robot");
 
 	int cliff_history[4] = { 0, 0, 0, 0 };
+	int direction_checked_counter = 0;
+	int ccw_counter = 0;
+	int cw_counter = 0;
 	int ma[4];
 	int bumper_count = 0;
-#define BUMPER_THRESHOLD 10
+#define BUMPER_THRESHOLD 12
 
 	while (true) {
 		//char c = cvWaitKey(30);
@@ -101,26 +105,16 @@ int main() {
 			}
 		}
 
-		if (!direction_checked) {
-			if (floor_colors[1] == 'w' && floor_colors[2] == 'b') {
-				robot_direction = CCW;
-				direction_checked = true;
-			}
-			else if (floor_colors[1] == 'b' && floor_colors[2] == 'w') {
-				robot_direction = CW;
-				direction_checked = true;
-			}
-			else {
-				continue;
-			}
-		}
-
 		int velL, velR;
 		// handle bumping
 
 		if (robotData.bumper[0] || robotData.bumper[1]) {
 			bumper_count++;
 		}
+		else {
+			bumper_count = 0;
+		}
+
 		if (bumper_count >= BUMPER_THRESHOLD) {
 			bumper_count = 0;
 			cout << "bumped!" << endl;
@@ -151,6 +145,36 @@ int main() {
 		}
 
 
+		// Check direction
+		if (!direction_checked) {
+			if (direction_checked_counter < 3) {
+				if (floor_colors[1] == 'w' && floor_colors[2] == 'b') {
+					ccw_counter++;
+				}
+				else if (floor_colors[1] == 'b' && floor_colors[2] == 'w') {
+					cw_counter++;
+				}
+				else {
+					continue;
+				}
+				direction_checked_counter++;
+				continue;
+			}
+			else {
+				direction_checked = true;
+			}
+			if (ccw_counter > cw_counter) {
+				robot_direction = CCW;
+			}
+			else {
+				robot_direction = CW;
+			}
+
+		}
+
+
+
+
 		// Condition of turning left/right
 #define MAX_N 100
 		double vl, vr;
@@ -170,10 +194,10 @@ int main() {
 			}
 			else if (temp_color == 'b') {
 				if (robot_direction == CCW) {
-					vl = 0.55 - n * 0.001;  // turn left
+					vl = 0.45 - n * 0.001;  // turn left
 				}
 				else if (robot_direction == CW) {
-					vr = 0.55 - n * 0.001;  // turn right
+					vr = 0.45 - n * 0.001;  // turn right
 				}
 				if (n < MAX_N) {
 					n += 1;
@@ -188,7 +212,6 @@ int main() {
 
 		velL = (int)(vl * Create_MaxVel);
 		velR = (int)(vr * Create_MaxVel);
-
 		int led_color = (abs(velL) + abs(velR)) / 4;
 		led_color = (led_color < 0) ? 0 : (led_color > 255) ? 255 : led_color;
 
