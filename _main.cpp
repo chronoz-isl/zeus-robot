@@ -54,12 +54,12 @@ int main() {
 	cvNamedWindow("Robot");
 
 	int cliff_history[4] = { 0, 0, 0, 0 };
-	int direction_checked_counter=0;
-	int ccw_counter=0;
-	int cw_counter=0;
+	int direction_checked_counter = 0;
+	int ccw_counter = 0;
+	int cw_counter = 0;
 	int ma[4];
 	int bumper_count = 0;
-#define BUMPER_THRESHOLD 10
+#define BUMPER_THRESHOLD 12
 
 	while (true) {
 		//char c = cvWaitKey(30);
@@ -69,13 +69,13 @@ int main() {
 		vx = vz = 0.0;
 
 		/*switch (c)
-		 {
-		 case 'w': vx = +1; break;
-		 case 's': vx = -1; break;
-		 case ' ': vx = vz = 0; break;
-		 case 'c': robot.Connect(Create_Comport); break;
-		 }
-		 */
+		{
+		case 'w': vx = +1; break;
+		case 's': vx = -1; break;
+		case ' ': vx = vz = 0; break;
+		case 'c': robot.Connect(Create_Comport); break;
+		}
+		*/
 		vx = 1;
 
 		if (!robot.ReadData(robotData))
@@ -111,6 +111,10 @@ int main() {
 		if (robotData.bumper[0] || robotData.bumper[1]) {
 			bumper_count++;
 		}
+		else {
+			bumper_count = 0;
+		}
+
 		if (bumper_count >= BUMPER_THRESHOLD) {
 			bumper_count = 0;
 			cout << "bumped!" << endl;
@@ -139,33 +143,35 @@ int main() {
 			}
 			continue;
 		}
-		
-		
+
+
 		// Check direction
 		if (!direction_checked) {
-            		if(direction_checked_counter < 3){
-                		if (floor_colors[1] == 'w' && floor_colors[2] == 'b') {
-                   			ccw_counter ++;
-          			} else if (floor_colors[1] == 'b' && floor_colors[2] == 'w') {
-                    			cw_counter ++;	
-                		} else {
-		    			continue;
-                		}
-                		direction_checked_counter ++;
-                		continue;
-            		}
-            		else{
-                		direction_checked = true;
-            		}
-            		if( ccw_counter > cw_counter){
-                		robot_direction = CCW;
-            		}
-           		else{
-                		robot_direction = CW;
-            		}
+			if (direction_checked_counter < 3) {
+				if (floor_colors[1] == 'w' && floor_colors[2] == 'b') {
+					ccw_counter++;
+				}
+				else if (floor_colors[1] == 'b' && floor_colors[2] == 'w') {
+					cw_counter++;
+				}
+				else {
+					continue;
+				}
+				direction_checked_counter++;
+				continue;
+			}
+			else {
+				direction_checked = true;
+			}
+			if (ccw_counter > cw_counter) {
+				robot_direction = CCW;
+			}
+			else {
+				robot_direction = CW;
+			}
 
 		}
-		
+
 
 
 
@@ -188,10 +194,10 @@ int main() {
 			}
 			else if (temp_color == 'b') {
 				if (robot_direction == CCW) {
-					vl = 0.55 - n * 0.001;  // turn left
+					vl = 0.45 - n * 0.001;  // turn left
 				}
 				else if (robot_direction == CW) {
-					vr = 0.55 - n * 0.001;  // turn right
+					vr = 0.45 - n * 0.001;  // turn right
 				}
 				if (n < MAX_N) {
 					n += 1;
